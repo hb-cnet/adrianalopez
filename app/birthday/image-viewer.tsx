@@ -39,15 +39,14 @@ export function ImageViewer({ image, onClose, onDelete }: ImageViewerProps) {
         >
           <Trash2 className="h-6 w-6 text-white" />
         </Button>
-        {/* Contenedor de la imagen que evita la propagación de clicks */}
-          <Image
-            src={image || "/placeholder.svg"}
-            alt="Vista completa"
-            layout="fill"
-            objectFit="contain"
-            className="max-h-[90vh] max-w-[90vw]"
-            unoptimized
-          />
+        {/* Imagen en vista completa */}
+        <Image
+          src={image || "/placeholder.svg"}
+          alt="Vista completa"
+          layout="fill"
+          objectFit="contain"
+          className="max-h-[90vh] max-w-[90vw]"
+        />
       </div>
     </div>
   )

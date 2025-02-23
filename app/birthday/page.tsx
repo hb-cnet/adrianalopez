@@ -1,56 +1,52 @@
 // app/birthday/page.tsx
 "use client"
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import confetti from "canvas-confetti";
-import { ImagePlus, Gift } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Carousel from "./carousel";
-import { ImageUploader } from "./image-uploader";
-import { AudioPlayer } from "./audio-player";
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import confetti from "canvas-confetti"
+import { ImagePlus, Gift } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Carousel } from "./carousel"
+import { ImageUploader } from "./image-uploader"
+import { AudioPlayer } from "./audio-player"
 
-function BirthdayPage() {
-  const router = useRouter();
-  const [showUploader, setShowUploader] = useState(false);
-  const [images, setImages] = useState<string[]>([]);
-  const [confettiCount, setConfettiCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL as string;
+export default function BirthdayPage() {
+  const router = useRouter()
+  const [showUploader, setShowUploader] = useState(false)
+  const [images, setImages] = useState<string[]>([])
+  const [confettiCount, setConfettiCount] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL as string
 
-  // Cargar imágenes desde el backend (GET)
+  // Define la URL base del bucket en Cloudflare R2
+  const bucketBaseURL = "https://pub-6441f60deee34aadbbc59ac975cddf5f.r2.dev/"
+
+  // Cargar imágenes desde el backend vía GET al endpoint /
   useEffect(() => {
     const loadImages = async () => {
       try {
-        const res = await fetch(`${backendUrl}/`);
-        const text = await res.text();
-        console.log("Respuesta completa GET:", text);
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch {
-          data = { images: [] };
-        }
+        const res = await fetch(`${backendUrl}/`)
+        const data = await res.json()
         if (data.images) {
-          setImages(data.images);
-        } else {
-          setImages([]);
+          // Prepend la URL base del bucket a cada nombre de imagen
+          const fullImageUrls = data.images.map((img: string) => `${bucketBaseURL}${img}`)
+          setImages(fullImageUrls)
         }
       } catch (error) {
-        console.error("Error al cargar imágenes:", error);
+        console.error("Error al cargar imágenes:", error)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
-    loadImages();
-  }, [backendUrl]);
+    }
+    loadImages()
+  }, [backendUrl])
 
   // Verificar autenticación y lanzar confetti
   useEffect(() => {
-    const isAuth = localStorage.getItem("isAuthenticated");
+    const isAuth = localStorage.getItem("isAuthenticated")
     if (!isAuth) {
-      router.push("/");
-      return;
+      router.push("/")
+      return
     }
     const launchConfetti = () => {
       if (confettiCount < 3) {
@@ -58,68 +54,54 @@ function BirthdayPage() {
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
-        });
-        setConfettiCount((prev) => prev + 1);
+        })
+        setConfettiCount((prev) => prev + 1)
       }
-    };
-    launchConfetti();
-    const interval = setInterval(launchConfetti, 3000);
-    return () => clearInterval(interval);
-  }, [router, confettiCount]);
+    }
+    launchConfetti()
+    const interval = setInterval(launchConfetti, 3000)
+    if (confettiCount >= 3) {
+      clearInterval(interval)
+    }
+    return () => clearInterval(interval)
+  }, [router, confettiCount])
 
-  // Función para subir imagen (POST)
+  // Manejo de subida de imagen usando el endpoint POST
   const handleImageUpload = async (file: File) => {
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      const formData = new FormData()
+      formData.append("file", file)
       const res = await fetch(`${backendUrl}/`, {
         method: "POST",
         body: formData,
-      });
-      // Depuración: imprimir la respuesta completa
-      const text = await res.text();
-      console.log("Respuesta completa POST:", text);
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        data = null;
-      }
-      // Se espera que el backend retorne { key: string } en caso de éxito
-      if (res.ok && data && data.key) {
-        setImages((prev) => [...prev, data.key]);
+      })
+      const data = await res.json()
+      if (res.ok && data.fileUrl) {
+        // Si el backend retorna el nombre del archivo, se debe anteponer la URL base del bucket
+        const fullUrl = `${bucketBaseURL}${data.fileUrl}`
+        setImages((prev) => [...prev, fullUrl])
       } else {
-        console.error("Error en la subida de imagen:", data ? data.error : "Respuesta vacía");
+        console.error("Error en la subida de imagen:", data.error)
       }
-      setShowUploader(false);
+      setShowUploader(false)
     } catch (error) {
-      console.error("Error al subir imagen:", error);
+      console.error("Error al subir imagen:", error)
     }
-  };
+  }
 
-  // Función para eliminar imagen (DELETE) que recibe la clave (string)
-  const handleDeleteImage = async (key: string) => {
-    try {
-      const res = await fetch(`${backendUrl}/r2/${encodeURIComponent(key)}`, {
-        method: "DELETE",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setImages((prev) => prev.filter((imgKey) => imgKey !== key));
-      } else {
-        console.error("Error al eliminar imagen:", data.error);
-      }
-    } catch (error) {
-      console.error("Error al eliminar imagen:", error);
-    }
-  };
+  // Eliminación de imagen (se elimina del estado; en una versión real se implementaría un endpoint DELETE)
+  const handleDeleteImage = async (index: number) => {
+    const newImages = images.filter((_, i) => i !== index)
+    setImages(newImages)
+    // Opcional: llamar a un endpoint DELETE para eliminar la imagen del servidor.
+  }
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400">
         <p className="text-white text-xl">Cargando imágenes...</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -155,7 +137,7 @@ function BirthdayPage() {
         </Button>
       </div>
 
-      {/* Botones de mute y subir imagen en la esquina inferior derecha */}
+      {/* Contenedor con los botones de mute y subir imagen en la esquina inferior derecha */}
       <div className="fixed bottom-4 right-4 z-50 flex gap-2">
         <AudioPlayer />
         <Button
@@ -172,7 +154,5 @@ function BirthdayPage() {
         <ImageUploader onUpload={handleImageUpload} onClose={() => setShowUploader(false)} />
       )}
     </div>
-  );
+  )
 }
-
-export default BirthdayPage;
