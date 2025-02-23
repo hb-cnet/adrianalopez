@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import confetti from "canvas-confetti"
 import { ImagePlus, Gift } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Carousel } from "./carousel"
+import Carousel from "./carousel";
 import { ImageUploader } from "./image-uploader"
 import { AudioPlayer } from "./audio-player"
 

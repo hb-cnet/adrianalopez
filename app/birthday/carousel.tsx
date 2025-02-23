@@ -1,17 +1,17 @@
 // app/birthday/carousel.tsx
 "use client"
 
-import React, { useState } from "react";
 import Image from "next/image";
+import { FC, useState } from "react";
 import { Trash2 } from "lucide-react";
 
 interface CarouselProps {
-  images: string[];
+  images: string[]; // claves de los objetos (nombres de archivo)
   onDeleteImage: (key: string) => void;
-  backendUrl: string;
+  backendUrl: string; // URL base de tu Worker
 }
 
-const Carousel: React.FC<CarouselProps> = ({ images, onDeleteImage, backendUrl }) => {
+const Carousel: FC<CarouselProps> = ({ images, onDeleteImage, backendUrl }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleImageClick = (key: string) => {
@@ -24,7 +24,7 @@ const Carousel: React.FC<CarouselProps> = ({ images, onDeleteImage, backendUrl }
 
   return (
     <div className="relative">
-      {/* Lista vertical de imágenes */}
+      {/* Lista vertical de imágenes con scroll */}
       <div className="overflow-y-auto h-[70vh]">
         {images.map((key, index) => (
           <div key={index} className="mb-4 cursor-pointer" onClick={() => handleImageClick(key)}>
