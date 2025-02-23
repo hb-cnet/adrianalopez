@@ -45,7 +45,7 @@ const Carousel: FC<CarouselProps> = ({ images, onDeleteImage, backendUrl }) => {
       </div>
 
       {/* Contenedor del carrusel vertical */}
-      <div className="overflow-hidden h-[70vh] mt-16">
+      <div className="overflow-hidden h-[85vh] mt-16">
         <div className="scroll-container">
           {duplicatedImages.map((key, index) => (
             <div
