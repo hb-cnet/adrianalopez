@@ -1,32 +1,30 @@
 // app/birthday/carousel.tsx
 "use client"
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
-import { phrases } from "./phrases"; // Asegúrate de que tus frases incluyan emojis
-import { ImageViewer } from "./image-viewer"; // Componente modal para vista previa
+import React, { FC, useState, useEffect } from "react";
+import { Trash2 } from "lucide-react";
 
 interface CarouselProps {
   images: string[]; // Claves de los objetos (nombres de archivo)
-  onDeleteImage: (index: number) => void; // Función que elimina la imagen dado su índice
+  onDeleteImage: (key: string) => void; // Ahora espera una cadena, no un número
+  backendUrl: string; // URL base de tu Worker
 }
 
-function shuffleArray<T>(array: T[]): T[] {
-  const newArr = [...array];
-  for (let i = newArr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-  }
-  return newArr;
-}
+const phrases = [
+  "🎉 ¡Feliz Cumpleaños! 🎉",
+  "😊 ¡Que tengas un día maravilloso! 😊",
+  "🌟 Eres lo mejor 🌟",
+  "💖 Te pienso siempre 💖",
+  "🎂 Hoy será un gran día 🎂"
+];
 
-export default function Carousel({ images, onDeleteImage }: CarouselProps) {
-  const [currentPhrase, setCurrentPhrase] = useState("");
+const Carousel: FC<CarouselProps> = ({ images, onDeleteImage, backendUrl }) => {
+  const [currentPhrase, setCurrentPhrase] = useState<string>("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [orderedImages, setOrderedImages] = useState<string[]>([]);
 
-  // Al cargar, se mezcla el orden de las imágenes
+  // Mezclar el orden de las imágenes solo al cargar
+  const [orderedImages, setOrderedImages] = useState<string[]>([]);
   useEffect(() => {
     if (images.length && orderedImages.length === 0) {
       setOrderedImages(shuffleArray(images));
@@ -35,80 +33,91 @@ export default function Carousel({ images, onDeleteImage }: CarouselProps) {
 
   // Actualiza la frase aleatoriamente cada 8 segundos
   useEffect(() => {
-    const showNewPhrase = () => {
+    const interval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * phrases.length);
       setCurrentPhrase(phrases[randomIndex]);
-    };
-    showNewPhrase();
-    const interval = setInterval(showNewPhrase, 8000);
+    }, 8000);
     return () => clearInterval(interval);
   }, []);
 
-  // Duplicamos las imágenes para simular un scroll infinito
+  // Duplicar imágenes para simular scroll infinito
   const duplicatedImages = [...orderedImages, ...orderedImages];
 
-  // Al hacer clic, se abre la vista previa y se guarda el índice original
-  const handleImageClick = (image: string, index: number) => {
-    setSelectedImage(image);
-    setSelectedIndex(index % orderedImages.length);
-  };
-
-  // Al eliminar, se llama a la función del padre con el índice
-  const handleDelete = () => {
-    if (selectedIndex !== null) {
-      onDeleteImage(selectedIndex);
-      setSelectedImage(null);
-      setSelectedIndex(null);
-    }
+  const handleImageClick = (key: string) => {
+    setSelectedImage(key);
   };
 
   return (
-    <>
-      <div className="relative w-full max-w-md mx-auto overflow-hidden" style={{ height: "78vh" }}>
-        {/* Frase animada en la parte superior */}
-        {currentPhrase && (
-          <div className="fixed top-4 left-0 right-0 text-center z-40">
-            <p className="text-xl md:text-2xl font-bold text-white bg-black/50 mx-auto inline-block px-4 py-2 rounded-full animate-bounce">
-              {currentPhrase}
-            </p>
-          </div>
-        )}
+    <div className="relative">
+      {/* Frase en la parte superior */}
+      {currentPhrase && (
+        <div className="fixed top-4 left-0 right-0 text-center z-40">
+          <p className="text-xl md:text-2xl font-bold text-white bg-black/50 mx-auto inline-block px-4 py-2 rounded-full animate-bounce">
+            {currentPhrase}
+          </p>
+        </div>
+      )}
 
-        {/* Carrusel vertical */}
-        <div className="overflow-hidden mt-16">
-          <div
-            className="animate-scroll px-4"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "2rem",
-              animation: "scrollVertical 30s linear infinite",
-            }}
-          >
-            {duplicatedImages.map((image, index) => (
-              <div key={index} className="relative w-full cursor-pointer" onClick={() => handleImageClick(image, index)}>
-                <Image
-                  src={image || "/placeholder.svg"}
-                  alt={`Imagen ${index + 1}`}
-                  layout="responsive"
-                  width={500}
-                  height={500}
-                  unoptimized
-                  className="w-full h-auto object-contain rounded-xl"
-                />
-              </div>
-            ))}
-          </div>
+      {/* Carrusel vertical */}
+      <div className="overflow-hidden h-[70vh] mt-16">
+        <div
+          className="animate-scroll px-4"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "2rem",
+            animation: "scrollVertical 30s linear infinite",
+          }}
+        >
+          {duplicatedImages.map((key, index) => (
+            <div key={index} className="relative w-full cursor-pointer" onClick={() => handleImageClick(key)}>
+              <Image
+                src={`${backendUrl}/r2/${encodeURIComponent(key)}`}
+                alt={`Imagen ${index + 1}`}
+                layout="responsive"
+                width={500}
+                height={500}
+                unoptimized
+                className="w-full h-auto object-contain rounded-xl"
+              />
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Modal de vista previa */}
       {selectedImage && (
-        <ImageViewer
-          image={selectedImage}
-          onClose={() => setSelectedImage(null)}
-          onDelete={handleDelete}
-        />
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="relative">
+            <Image
+              src={`${backendUrl}/r2/${encodeURIComponent(selectedImage)}`}
+              alt="Vista previa"
+              width={800}
+              height={800}
+              unoptimized
+              className="rounded-xl"
+            />
+            {/* Botón para eliminar la imagen */}
+            <button
+              onClick={() => {
+                onDeleteImage(selectedImage);
+                setSelectedImage(null);
+              }}
+              className="absolute bottom-4 left-4 bg-red-500 text-white p-2 rounded"
+              title="Eliminar imagen"
+            >
+              <Trash2 className="h-6 w-6" />
+            </button>
+            {/* Botón para cerrar la vista previa */}
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 bg-gray-700 text-white p-2 rounded"
+              title="Cerrar vista previa"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
       )}
 
       <style jsx>{`
@@ -124,6 +133,17 @@ export default function Carousel({ images, onDeleteImage }: CarouselProps) {
           animation-play-state: paused;
         }
       `}</style>
-    </>
+    </div>
   );
+};
+
+function shuffleArray<T>(array: T[]): T[] {
+  const newArr = [...array];
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+  }
+  return newArr;
 }
+
+export default Carousel;
