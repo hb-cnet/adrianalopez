@@ -59,3 +59,4 @@ export async function GET() {
     return NextResponse.json({ error: "Error al leer imágenes" }, { status: 500 });
   }
 }
+  
