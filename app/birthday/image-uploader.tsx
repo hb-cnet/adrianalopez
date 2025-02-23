@@ -4,7 +4,13 @@
 import { useState, useRef } from "react"
 import { Camera, ImageIcon, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface ImageUploaderProps {
@@ -35,11 +41,14 @@ export function ImageUploader({ onUpload, onClose }: ImageUploaderProps) {
     if (!validateFile(file)) return
     setIsLoading(true)
     setError("")
-    // Se envía el archivo y se maneja el error en caso de fallo
     onUpload(file)
       .catch((err) => {
         console.error("Error en la subida de imagen:", err)
-        setError("Error al subir la imagen. Intenta nuevamente.")
+        // Intenta extraer un mensaje de error; de lo contrario, usa un mensaje por defecto.
+        const errMsg =
+          (err && (err.message || err.toString())) ||
+          "Error al subir la imagen. Intenta nuevamente."
+        setError(errMsg)
       })
       .finally(() => setIsLoading(false))
   }
@@ -53,17 +62,13 @@ export function ImageUploader({ onUpload, onClose }: ImageUploaderProps) {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent
-        className="sm:max-w-[425px]"
-        aria-describedby="upload-dialog-description"
-      >
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Agregar nueva foto</DialogTitle>
+          <DialogDescription>
+            Selecciona o toma una foto para subirla
+          </DialogDescription>
         </DialogHeader>
-        {/* Elemento de descripción oculto para accesibilidad */}
-        <p id="upload-dialog-description" className="sr-only">
-          Selecciona o toma una foto para subirla
-        </p>
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
