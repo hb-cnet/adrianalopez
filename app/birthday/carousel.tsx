@@ -87,6 +87,7 @@ export function Carousel({ images, onDeleteImage }: CarouselProps) {
                 layout="responsive"
                 width={500}
                 height={500}
+                unoptimized
               />
             </div>
           ))}
