@@ -68,7 +68,7 @@ export function Carousel({ images, onDeleteImage }: CarouselProps) {
           ))}
         </div>
         {currentPhrase && (
-          <div className="fixed top-4 left-0 right-0 text-center z-40">
+          <div className="fixed top-4 left-0 right-0 text-center z-41">
             <p className="text-xl md:text-2xl font-bold text-white bg-black/50 mx-auto inline-block px-4 py-2 rounded-full animate-bounce">
               {currentPhrase}
             </p>
@@ -80,5 +80,6 @@ export function Carousel({ images, onDeleteImage }: CarouselProps) {
         <ImageViewer image={selectedImage} onClose={() => setSelectedImage(null)} onDelete={handleDelete} />
       )}
     </>
+
   )
 }
