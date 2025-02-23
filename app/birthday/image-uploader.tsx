@@ -1,3 +1,4 @@
+// app/birthday/image-uploader.tsx
 "use client"
 
 import { useState, useRef } from "react"
@@ -7,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface ImageUploaderProps {
-  onUpload: (file: File) => void
+  onUpload: (file: File) => Promise<void>
   onClose: () => void
 }
 
@@ -34,9 +35,13 @@ export function ImageUploader({ onUpload, onClose }: ImageUploaderProps) {
     if (!validateFile(file)) return
     setIsLoading(true)
     setError("")
-    // Enviar el objeto File al padre para que lo procese (envío al endpoint)
+    // Se envía el archivo y se maneja el error en caso de fallo
     onUpload(file)
-    setIsLoading(false)
+      .catch((err) => {
+        console.error("Error en la subida de imagen:", err)
+        setError("Error al subir la imagen. Intenta nuevamente.")
+      })
+      .finally(() => setIsLoading(false))
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,17 +53,22 @@ export function ImageUploader({ onUpload, onClose }: ImageUploaderProps) {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px]"
+        aria-describedby="upload-dialog-description"
+      >
         <DialogHeader>
           <DialogTitle>Agregar nueva foto</DialogTitle>
         </DialogHeader>
-
+        {/* Elemento de descripción oculto para accesibilidad */}
+        <p id="upload-dialog-description" className="sr-only">
+          Selecciona o toma una foto para subirla
+        </p>
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-
         <div className="grid gap-4">
           <input
             ref={fileInputRef}
@@ -82,7 +92,11 @@ export function ImageUploader({ onUpload, onClose }: ImageUploaderProps) {
             className="w-full flex items-center gap-2"
             disabled={isLoading}
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ImageIcon className="h-4 w-4" />
+            )}
             Seleccionar de la galería
           </Button>
           <Button
@@ -91,7 +105,11 @@ export function ImageUploader({ onUpload, onClose }: ImageUploaderProps) {
             className="w-full flex items-center gap-2"
             disabled={isLoading}
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Camera className="h-4 w-4" />
+            )}
             Tomar foto
           </Button>
           <div className="text-sm text-muted-foreground space-y-2 bg-secondary/50 p-3 rounded-lg">
