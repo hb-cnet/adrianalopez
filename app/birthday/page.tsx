@@ -10,6 +10,15 @@ import { Carousel } from "./carousel"
 import { ImageUploader } from "./image-uploader"
 import { AudioPlayer } from "./audio-player"
 
+function shuffleArray<T>(array: T[]): T[] {
+  const newArr = [...array]
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[newArr[i], newArr[j]] = [newArr[j], newArr[i]]
+  }
+  return newArr
+}
+
 export default function BirthdayPage() {
   const router = useRouter()
   const [showUploader, setShowUploader] = useState(false)
@@ -21,7 +30,7 @@ export default function BirthdayPage() {
   // URL base del bucket en Cloudflare R2
   const bucketBaseURL = "https://pub-6441f60deee34aadbbc59ac975cddf5f.r2.dev/"
 
-  // Cargar imágenes desde el backend vía GET
+  // Cargar imágenes desde el backend vía GET y randomizar el orden al cargar la página
   useEffect(() => {
     const loadImages = async () => {
       try {
@@ -29,7 +38,7 @@ export default function BirthdayPage() {
         const data = await res.json()
         if (data.images) {
           const fullImageUrls = data.images.map((img: string) => `${bucketBaseURL}${img}`)
-          setImages(fullImageUrls)
+          setImages(shuffleArray(fullImageUrls))
         }
       } catch (error) {
         console.error("Error al cargar imágenes:", error)
@@ -88,9 +97,10 @@ export default function BirthdayPage() {
         throw new Error(data?.error || "Error en la subida de imagen")
       }
 
-      // Ahora se utiliza "key" en lugar de "fileUrl"
+      // El backend retorna la propiedad "key"
       if (data.key) {
         const fullUrl = `${bucketBaseURL}${data.key}`
+        // Se agrega al final, sin reordenar las imágenes ya cargadas
         setImages((prev) => [...prev, fullUrl])
       } else {
         console.error("Error: no se encontró key en la respuesta", data)
@@ -103,11 +113,11 @@ export default function BirthdayPage() {
         message = error.message
       }
       console.error("Error en la subida de imagen:", message)
-      // Aquí puedes notificar al usuario
+      // Aquí puedes notificar al usuario mediante un toast o alerta visual
     }
   }
 
-  // Eliminación de imagen (actualmente solo elimina del estado)
+  // Eliminación de imagen (actualmente solo elimina del estado local)
   const handleDeleteImage = async (index: number) => {
     const newImages = images.filter((_, i) => i !== index)
     setImages(newImages)
