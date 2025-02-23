@@ -11,28 +11,10 @@ interface CarouselProps {
   onDeleteImage: (index: number) => void
 }
 
-// Función de shuffle (Fisher–Yates)
-function shuffleArray<T>(array: T[]): T[] {
-  const newArr = [...array]
-  for (let i = newArr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[newArr[i], newArr[j]] = [newArr[j], newArr[i]]
-  }
-  return newArr
-}
-
 export function Carousel({ images, onDeleteImage }: CarouselProps) {
   const [currentPhrase, setCurrentPhrase] = useState("")
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
-  // Almacenamos el orden aleatorio solo al cargar la página
-  const [orderedImages, setOrderedImages] = useState<string[]>([])
-
-  useEffect(() => {
-    if (images.length && orderedImages.length === 0) {
-      setOrderedImages(shuffleArray(images))
-    }
-  }, [images, orderedImages])
 
   useEffect(() => {
     const showNewPhrase = () => {
@@ -43,13 +25,13 @@ export function Carousel({ images, onDeleteImage }: CarouselProps) {
     return () => clearInterval(interval)
   }, [])
 
-  // Duplicar imágenes para efecto infinito
-  const duplicatedImages = [...orderedImages, ...orderedImages]
+  // Duplicamos las imágenes para lograr el efecto de scroll infinito
+  const duplicatedImages = [...images, ...images]
 
   const handleImageClick = (image: string, index: number) => {
-    // Se pasa la URL de la imagen, no el índice
     setSelectedImage(image)
-    setSelectedIndex(index % orderedImages.length)
+    // Se usa módulo para obtener el índice relativo a la lista original
+    setSelectedIndex(index % images.length)
   }
 
   const handleDelete = () => {
@@ -62,10 +44,7 @@ export function Carousel({ images, onDeleteImage }: CarouselProps) {
 
   return (
     <>
-      <div
-        className="relative w-full max-w-md mx-auto overflow-hidden"
-        style={{ height: "78vh" }}
-      >
+      <div className="relative w-full max-w-md mx-auto overflow-hidden" style={{ height: "78vh" }}>
         <div
           className="animate-scroll px-4"
           style={{
@@ -76,11 +55,7 @@ export function Carousel({ images, onDeleteImage }: CarouselProps) {
           }}
         >
           {duplicatedImages.map((image, index) => (
-            <div
-              key={index}
-              className="relative w-full cursor-pointer"
-              onClick={() => handleImageClick(image, index)}
-            >
+            <div key={index} className="relative w-full cursor-pointer" onClick={() => handleImageClick(image, index)}>
               <Image
                 src={image || "/placeholder.svg"}
                 alt={`Imagen ${index + 1}`}
@@ -102,11 +77,7 @@ export function Carousel({ images, onDeleteImage }: CarouselProps) {
       </div>
 
       {selectedImage && (
-        <ImageViewer
-          image={selectedImage}
-          onClose={() => setSelectedImage(null)}
-          onDelete={handleDelete}
-        />
+        <ImageViewer image={selectedImage} onClose={() => setSelectedImage(null)} onDelete={handleDelete} />
       )}
     </>
   )
