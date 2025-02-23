@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import confetti from "canvas-confetti"
 import { ImagePlus, Gift } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Carousel from "./carousel";
+import { Carousel } from "./carousel"
 import { ImageUploader } from "./image-uploader"
 import { AudioPlayer } from "./audio-player"
 
@@ -18,7 +18,7 @@ function BirthdayPage() {
   const [isLoading, setIsLoading] = useState(true)
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL as string
 
-  // Cargar imágenes desde el backend vía GET
+  // Cargar imágenes del backend (GET)
   useEffect(() => {
     const loadImages = async () => {
       try {
@@ -81,7 +81,7 @@ function BirthdayPage() {
     }
   }
 
-  // Función para eliminar imagen (DELETE) que recibe la clave de la imagen
+  // Función para eliminar imagen (DELETE)
   const handleDeleteImage = async (key: string) => {
     try {
       const res = await fetch(`${backendUrl}/r2/${encodeURIComponent(key)}`, {
