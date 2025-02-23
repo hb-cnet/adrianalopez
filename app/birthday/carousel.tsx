@@ -1,72 +1,116 @@
 // app/birthday/carousel.tsx
 "use client"
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import React, { FC, useState, useEffect } from "react";
-import { Trash2 } from "lucide-react";
+import { phrases } from "./phrases"; // Asegúrate de que tus frases incluyan emojis
+import { ImageViewer } from "./image-viewer"; // Componente modal para vista previa
 
 interface CarouselProps {
   images: string[]; // Claves de los objetos (nombres de archivo)
-  onDeleteImage: (key: string) => void;
-  backendUrl: string; // URL base de tu Worker (NEXT_PUBLIC_BACKEND_URL)
+  onDeleteImage: (index: number) => void; // Función que elimina la imagen dado su índice
 }
 
-const phrases = [
-  "¡Feliz Cumpleaños!",
-  "¡Que tengas un día maravilloso!",
-  "Eres lo mejor",
-  "Te pienso siempre",
-  "Hoy será un gran día"
-];
+function shuffleArray<T>(array: T[]): T[] {
+  const newArr = [...array];
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+  }
+  return newArr;
+}
 
-const Carousel: FC<CarouselProps> = ({ images, onDeleteImage, backendUrl }) => {
+export default function Carousel({ images, onDeleteImage }: CarouselProps) {
+  const [currentPhrase, setCurrentPhrase] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [currentPhrase, setCurrentPhrase] = useState<string>(phrases[0]);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [orderedImages, setOrderedImages] = useState<string[]>([]);
+
+  // Al cargar, se mezcla el orden de las imágenes
+  useEffect(() => {
+    if (images.length && orderedImages.length === 0) {
+      setOrderedImages(shuffleArray(images));
+    }
+  }, [images, orderedImages]);
 
   // Actualiza la frase aleatoriamente cada 8 segundos
   useEffect(() => {
-    const interval = setInterval(() => {
+    const showNewPhrase = () => {
       const randomIndex = Math.floor(Math.random() * phrases.length);
       setCurrentPhrase(phrases[randomIndex]);
-    }, 8000);
+    };
+    showNewPhrase();
+    const interval = setInterval(showNewPhrase, 8000);
     return () => clearInterval(interval);
   }, []);
 
-  // Duplicamos las imágenes para simular scroll infinito
-  const duplicatedImages = [...images, ...images];
+  // Duplicamos las imágenes para simular un scroll infinito
+  const duplicatedImages = [...orderedImages, ...orderedImages];
+
+  // Al hacer clic, se abre la vista previa y se guarda el índice original
+  const handleImageClick = (image: string, index: number) => {
+    setSelectedImage(image);
+    setSelectedIndex(index % orderedImages.length);
+  };
+
+  // Al eliminar, se llama a la función del padre con el índice
+  const handleDelete = () => {
+    if (selectedIndex !== null) {
+      onDeleteImage(selectedIndex);
+      setSelectedImage(null);
+      setSelectedIndex(null);
+    }
+  };
 
   return (
-    <div className="relative">
-      {/* Frase en la parte superior */}
-      <div className="fixed top-4 left-0 right-0 text-center z-50">
-        <p className="text-xl md:text-2xl font-bold text-white bg-black/50 mx-auto inline-block px-4 py-2 rounded-full">
-          {currentPhrase}
-        </p>
-      </div>
+    <>
+      <div className="relative w-full max-w-md mx-auto overflow-hidden" style={{ height: "78vh" }}>
+        {/* Frase animada en la parte superior */}
+        {currentPhrase && (
+          <div className="fixed top-4 left-0 right-0 text-center z-40">
+            <p className="text-xl md:text-2xl font-bold text-white bg-black/50 mx-auto inline-block px-4 py-2 rounded-full animate-bounce">
+              {currentPhrase}
+            </p>
+          </div>
+        )}
 
-      {/* Contenedor del carrusel vertical */}
-      <div className="overflow-hidden h-[85vh] mt-16">
-        <div className="scroll-container">
-          {duplicatedImages.map((key, index) => (
-            <div
-              key={index}
-              className="mb-4 cursor-pointer"
-              onClick={() => setSelectedImage(key)}
-            >
-              <Image
-                src={`${backendUrl}/r2/${encodeURIComponent(key)}`}
-                alt={`Imagen ${index + 1}`}
-                width={500}
-                height={500}
-                unoptimized
-                className="w-full object-contain rounded-xl"
-              />
-            </div>
-          ))}
+        {/* Carrusel vertical */}
+        <div className="overflow-hidden mt-16">
+          <div
+            className="animate-scroll px-4"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "2rem",
+              animation: "scrollVertical 30s linear infinite",
+            }}
+          >
+            {duplicatedImages.map((image, index) => (
+              <div key={index} className="relative w-full cursor-pointer" onClick={() => handleImageClick(image, index)}>
+                <Image
+                  src={image || "/placeholder.svg"}
+                  alt={`Imagen ${index + 1}`}
+                  layout="responsive"
+                  width={500}
+                  height={500}
+                  unoptimized
+                  className="w-full h-auto object-contain rounded-xl"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Estilos para la animación del scroll */}
+      {/* Modal de vista previa */}
+      {selectedImage && (
+        <ImageViewer
+          image={selectedImage}
+          onClose={() => setSelectedImage(null)}
+          onDelete={handleDelete}
+        />
+      )}
+
       <style jsx>{`
         @keyframes scrollVertical {
           0% {
@@ -76,53 +120,10 @@ const Carousel: FC<CarouselProps> = ({ images, onDeleteImage, backendUrl }) => {
             transform: translateY(-50%);
           }
         }
-        .scroll-container {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          animation: scrollVertical 30s linear infinite;
-        }
-        .scroll-container:hover {
+        .animate-scroll:hover {
           animation-play-state: paused;
         }
       `}</style>
-
-      {/* Modal de vista previa */}
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="relative">
-            <Image
-              src={`${backendUrl}/r2/${encodeURIComponent(selectedImage)}`}
-              alt="Vista previa"
-              width={800}
-              height={800}
-              unoptimized
-              className="rounded-xl"
-            />
-            {/* Botón para eliminar la imagen */}
-            <button
-              onClick={() => {
-                onDeleteImage(selectedImage);
-                setSelectedImage(null);
-              }}
-              className="absolute bottom-4 left-4 bg-red-500 text-white p-2 rounded"
-              title="Eliminar imagen"
-            >
-              <Trash2 className="h-6 w-6" />
-            </button>
-            {/* Botón para cerrar la vista previa */}
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 bg-gray-700 text-white p-2 rounded"
-              title="Cerrar vista previa"
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
-};
-
-export default Carousel;
+}
