@@ -21,14 +21,13 @@ export default function BirthdayPage() {
   // Define la URL base del bucket en Cloudflare R2
   const bucketBaseURL = "https://pub-6441f60deee34aadbbc59ac975cddf5f.r2.dev/"
 
-  // Cargar imágenes desde el backend vía GET al endpoint /
+  // Cargar imágenes desde el backend vía GET
   useEffect(() => {
     const loadImages = async () => {
       try {
         const res = await fetch(`${backendUrl}/`)
         const data = await res.json()
         if (data.images) {
-          // Prepend la URL base del bucket a cada nombre de imagen
           const fullImageUrls = data.images.map((img: string) => `${bucketBaseURL}${img}`)
           setImages(fullImageUrls)
         }
@@ -66,7 +65,7 @@ export default function BirthdayPage() {
     return () => clearInterval(interval)
   }, [router, confettiCount])
 
-  // Manejo de subida de imagen usando el endpoint POST
+  // Función de subida de imagen con manejo robusto de errores y sin usar any
   const handleImageUpload = async (file: File) => {
     try {
       const formData = new FormData()
@@ -75,25 +74,42 @@ export default function BirthdayPage() {
         method: "POST",
         body: formData,
       })
-      const data = await res.json()
-      if (res.ok && data.fileUrl) {
-        // Si el backend retorna el nombre del archivo, se debe anteponer la URL base del bucket
+
+      let data
+      try {
+        data = await res.json()
+      } catch (jsonError) {
+        console.error("Error al parsear la respuesta JSON:", jsonError)
+        throw new Error("Respuesta del servidor no válida")
+      }
+
+      if (!res.ok) {
+        console.error("Error en la subida de imagen, respuesta:", data)
+        throw new Error(data?.error || "Error en la subida de imagen")
+      }
+
+      if (data.fileUrl) {
         const fullUrl = `${bucketBaseURL}${data.fileUrl}`
         setImages((prev) => [...prev, fullUrl])
       } else {
-        console.error("Error en la subida de imagen:", data.error)
+        console.error("Error: no se encontró fileUrl en la respuesta", data)
+        throw new Error("No se recibió fileUrl en la respuesta")
       }
       setShowUploader(false)
-    } catch (error) {
-      console.error("Error al subir imagen:", error)
+    } catch (error: unknown) {
+      let message = "Error en la subida de imagen"
+      if (error instanceof Error) {
+        message = error.message
+      }
+      console.error("Error en la subida de imagen:", message)
+      // Aquí puedes agregar lógica adicional para notificar al usuario.
     }
   }
 
-  // Eliminación de imagen (se elimina del estado; en una versión real se implementaría un endpoint DELETE)
+  // Eliminación de imagen (actualmente solo elimina del estado)
   const handleDeleteImage = async (index: number) => {
     const newImages = images.filter((_, i) => i !== index)
     setImages(newImages)
-    // Opcional: llamar a un endpoint DELETE para eliminar la imagen del servidor.
   }
 
   if (isLoading) {
@@ -125,7 +141,7 @@ export default function BirthdayPage() {
         </div>
       </main>
 
-      {/* Botón de regalo en la esquina inferior izquierda */}
+      {/* Botón de regalo */}
       <div className="fixed bottom-4 left-4 z-50">
         <Button
           variant="secondary"
@@ -137,7 +153,7 @@ export default function BirthdayPage() {
         </Button>
       </div>
 
-      {/* Contenedor con los botones de mute y subir imagen en la esquina inferior derecha */}
+      {/* Botones de audio y subir imagen */}
       <div className="fixed bottom-4 right-4 z-50 flex gap-2">
         <AudioPlayer />
         <Button
