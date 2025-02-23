@@ -16,17 +16,26 @@ export default function BirthdayPage() {
   const [images, setImages] = useState<string[]>([])
   const [confettiCount, setConfettiCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
-  // Utilizamos la variable de entorno para la URL del backend
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL as string;
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL as string
 
   // Cargar imágenes desde el backend vía GET
   useEffect(() => {
     const loadImages = async () => {
       try {
         const res = await fetch(`${backendUrl}/`)
-        const data = await res.json()
+        // Si la respuesta es vacía o no contiene JSON, asigna array vacío
+        const text = await res.text()
+        console.log("Respuesta completa GET:", text)
+        let data
+        try {
+          data = JSON.parse(text)
+        } catch {
+          data = { images: [] }
+        }
         if (data.images) {
           setImages(data.images)
+        } else {
+          setImages([])
         }
       } catch (error) {
         console.error("Error al cargar imágenes:", error)
@@ -71,11 +80,19 @@ export default function BirthdayPage() {
         method: "POST",
         body: formData,
       })
-      const data = await res.json()
-      if (res.ok && data.fileUrl) {
+      // Imprimir la respuesta completa para depuración
+      const text = await res.text()
+      console.log("Respuesta completa POST:", text)
+      let data
+      try {
+        data = JSON.parse(text)
+      } catch {
+        data = null
+      }
+      if (res.ok && data && data.fileUrl) {
         setImages((prev) => [...prev, data.fileUrl])
       } else {
-        console.error("Error en la subida de imagen:", data.error)
+        console.error("Error en la subida de imagen:", data ? data.error : "Respuesta vacía")
       }
       setShowUploader(false)
     } catch (error) {
@@ -83,11 +100,10 @@ export default function BirthdayPage() {
     }
   }
 
-  // Eliminación de imagen (aquí se elimina solo del estado; en una versión real se implementaría un endpoint DELETE)
+  // Eliminación de imagen (aquí se elimina solo del estado; en producción implementar endpoint DELETE)
   const handleDeleteImage = async (index: number) => {
     const newImages = images.filter((_, i) => i !== index)
     setImages(newImages)
-    // Opcional: llamar a un endpoint DELETE en el backend para eliminar la imagen
   }
 
   if (isLoading) {
