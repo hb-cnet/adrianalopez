@@ -46,6 +46,7 @@ export function ImageViewer({ image, onClose, onDelete }: ImageViewerProps) {
             layout="fill"
             objectFit="contain"
             className="max-h-[90vh] max-w-[90vw]"
+            unoptimized
           />
       </div>
     </div>
