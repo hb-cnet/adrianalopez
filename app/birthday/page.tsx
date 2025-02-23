@@ -10,7 +10,7 @@ import { Carousel } from "./carousel"
 import { ImageUploader } from "./image-uploader"
 import { AudioPlayer } from "./audio-player"
 
-export default function BirthdayPage() {
+function BirthdayPage() {
   const router = useRouter()
   const [showUploader, setShowUploader] = useState(false)
   const [images, setImages] = useState<string[]>([])
@@ -23,7 +23,6 @@ export default function BirthdayPage() {
     const loadImages = async () => {
       try {
         const res = await fetch(`${backendUrl}/`)
-        // Si la respuesta es vacía o no contiene JSON, asigna array vacío
         const text = await res.text()
         console.log("Respuesta completa GET:", text)
         let data
@@ -100,7 +99,7 @@ export default function BirthdayPage() {
     }
   }
 
-  // Eliminación de imagen (aquí se elimina solo del estado; en producción implementar endpoint DELETE)
+  // Eliminación de imagen (se elimina solo del estado)
   const handleDeleteImage = async (index: number) => {
     const newImages = images.filter((_, i) => i !== index)
     setImages(newImages)
@@ -147,7 +146,7 @@ export default function BirthdayPage() {
         </Button>
       </div>
 
-      {/* Contenedor con los botones de mute y subir imagen en la esquina inferior derecha */}
+      {/* Botones de mute y subir imagen en la esquina inferior derecha */}
       <div className="fixed bottom-4 right-4 z-50 flex gap-2">
         <AudioPlayer />
         <Button
@@ -166,3 +165,5 @@ export default function BirthdayPage() {
     </div>
   )
 }
+
+export default BirthdayPage;
