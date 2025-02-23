@@ -18,7 +18,7 @@ export default function BirthdayPage() {
   const [isLoading, setIsLoading] = useState(true)
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL as string
 
-  // Define la URL base del bucket en Cloudflare R2
+  // URL base del bucket en Cloudflare R2
   const bucketBaseURL = "https://pub-6441f60deee34aadbbc59ac975cddf5f.r2.dev/"
 
   // Cargar imágenes desde el backend vía GET
@@ -65,7 +65,7 @@ export default function BirthdayPage() {
     return () => clearInterval(interval)
   }, [router, confettiCount])
 
-  // Función de subida de imagen con manejo robusto de errores y sin usar any
+  // Función de subida de imagen con manejo robusto de errores
   const handleImageUpload = async (file: File) => {
     try {
       const formData = new FormData()
@@ -88,12 +88,13 @@ export default function BirthdayPage() {
         throw new Error(data?.error || "Error en la subida de imagen")
       }
 
-      if (data.fileUrl) {
-        const fullUrl = `${bucketBaseURL}${data.fileUrl}`
+      // Ahora se utiliza "key" en lugar de "fileUrl"
+      if (data.key) {
+        const fullUrl = `${bucketBaseURL}${data.key}`
         setImages((prev) => [...prev, fullUrl])
       } else {
-        console.error("Error: no se encontró fileUrl en la respuesta", data)
-        throw new Error("No se recibió fileUrl en la respuesta")
+        console.error("Error: no se encontró key en la respuesta", data)
+        throw new Error("No se recibió key en la respuesta")
       }
       setShowUploader(false)
     } catch (error: unknown) {
@@ -102,7 +103,7 @@ export default function BirthdayPage() {
         message = error.message
       }
       console.error("Error en la subida de imagen:", message)
-      // Aquí puedes agregar lógica adicional para notificar al usuario.
+      // Aquí puedes notificar al usuario
     }
   }
 
