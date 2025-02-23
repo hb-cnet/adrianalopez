@@ -6,9 +6,9 @@ import { FC } from "react";
 import { Trash2 } from "lucide-react";
 
 interface CarouselProps {
-  images: string[]; // Claves de los objetos en R2 (por ejemplo, "Unknown-a1.jpeg")
+  images: string[]; // claves de las imágenes
   onDeleteImage: (key: string) => void;
-  backendUrl: string; // La URL base de tu Worker (ej: https://my-birthday-backend.alvaro-hurtado.workers.dev)
+  backendUrl: string;
 }
 
 export const Carousel: FC<CarouselProps> = ({ images, onDeleteImage, backendUrl }) => {
@@ -24,7 +24,6 @@ export const Carousel: FC<CarouselProps> = ({ images, onDeleteImage, backendUrl 
             unoptimized
             className="rounded-xl object-contain"
           />
-          {/* Botón de eliminación: se muestra al hacer hover o al tocar */}
           <button
             onClick={() => onDeleteImage(key)}
             className="absolute bottom-2 left-2 hidden group-hover:block bg-red-500 text-white p-1 rounded"
