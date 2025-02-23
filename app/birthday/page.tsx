@@ -16,9 +16,10 @@ export default function BirthdayPage() {
   const [images, setImages] = useState<string[]>([])
   const [confettiCount, setConfettiCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  // Utilizamos la variable de entorno para la URL del backend
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
-  // Cargar imágenes desde el backend vía GET al endpoint /api/images
+  // Cargar imágenes desde el backend vía GET
   useEffect(() => {
     const loadImages = async () => {
       try {
@@ -61,7 +62,7 @@ export default function BirthdayPage() {
     return () => clearInterval(interval)
   }, [router, confettiCount])
 
-  // Manejo de subida de imagen usando el endpoint POST
+  // Manejo de subida de imagen usando el endpoint POST del backend
   const handleImageUpload = async (file: File) => {
     try {
       const formData = new FormData()
@@ -86,7 +87,7 @@ export default function BirthdayPage() {
   const handleDeleteImage = async (index: number) => {
     const newImages = images.filter((_, i) => i !== index)
     setImages(newImages)
-    // Opcional: llamar a un endpoint DELETE para eliminar la imagen del servidor.
+    // Opcional: llamar a un endpoint DELETE en el backend para eliminar la imagen
   }
 
   if (isLoading) {
@@ -129,9 +130,6 @@ export default function BirthdayPage() {
           <Gift className="h-10 w-10" />
         </Button>
       </div>
-
-
-
 
       {/* Contenedor con los botones de mute y subir imagen en la esquina inferior derecha */}
       <div className="fixed bottom-4 right-4 z-50 flex gap-2">
