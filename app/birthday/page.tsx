@@ -18,12 +18,19 @@ function BirthdayPage() {
   const [isLoading, setIsLoading] = useState(true)
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL as string
 
-  // Cargar imágenes del backend (GET)
+  // Cargar imágenes desde el backend vía GET
   useEffect(() => {
     const loadImages = async () => {
       try {
         const res = await fetch(`${backendUrl}/`)
-        const data = await res.json()
+        const text = await res.text()
+        console.log("Respuesta completa GET:", text)
+        let data
+        try {
+          data = JSON.parse(text)
+        } catch {
+          data = { images: [] }
+        }
         if (data.images) {
           setImages(data.images)
         } else {
@@ -57,10 +64,13 @@ function BirthdayPage() {
     }
     launchConfetti()
     const interval = setInterval(launchConfetti, 3000)
+    if (confettiCount >= 3) {
+      clearInterval(interval)
+    }
     return () => clearInterval(interval)
   }, [router, confettiCount])
 
-  // Función para subir imagen (POST)
+  // Manejo de subida de imagen usando el endpoint POST del backend
   const handleImageUpload = async (file: File) => {
     try {
       const formData = new FormData()
@@ -69,9 +79,17 @@ function BirthdayPage() {
         method: "POST",
         body: formData,
       })
-      const data = await res.json()
-      if (res.ok && data.key) {
-        setImages((prev) => [...prev, data.key])
+      // Imprimir la respuesta completa para depuración
+      const text = await res.text()
+      console.log("Respuesta completa POST:", text)
+      let data
+      try {
+        data = JSON.parse(text)
+      } catch {
+        data = null
+      }
+      if (res.ok && data && data.fileUrl) {
+        setImages((prev) => [...prev, data.fileUrl])
       } else {
         console.error("Error en la subida de imagen:", data ? data.error : "Respuesta vacía")
       }
@@ -81,21 +99,10 @@ function BirthdayPage() {
     }
   }
 
-  // Función para eliminar imagen (DELETE)
-  const handleDeleteImage = async (key: string) => {
-    try {
-      const res = await fetch(`${backendUrl}/r2/${encodeURIComponent(key)}`, {
-        method: "DELETE",
-      })
-      const data = await res.json()
-      if (res.ok) {
-        setImages((prev) => prev.filter((imgKey) => imgKey !== key))
-      } else {
-        console.error("Error al eliminar imagen:", data.error)
-      }
-    } catch (error) {
-      console.error("Error al eliminar imagen:", error)
-    }
+  // Eliminación de imagen (se elimina solo del estado)
+  const handleDeleteImage = async (index: number) => {
+    const newImages = images.filter((_, i) => i !== index)
+    setImages(newImages)
   }
 
   if (isLoading) {
@@ -111,7 +118,7 @@ function BirthdayPage() {
       <main className="container mx-auto px-2 py-4 md:px-4 md:py-8">
         <div className="flex justify-center items-center min-h-[calc(100vh-8rem)]">
           {images.length > 0 ? (
-            <Carousel images={images} onDeleteImage={handleDeleteImage} backendUrl={backendUrl} />
+            <Carousel images={images} onDeleteImage={handleDeleteImage} />
           ) : (
             <div className="text-center text-white">
               <p className="text-xl mb-4">No hay imágenes aún</p>
