@@ -16,12 +16,13 @@ export default function BirthdayPage() {
   const [images, setImages] = useState<string[]>([])
   const [confettiCount, setConfettiCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
   // Cargar imágenes desde el backend vía GET al endpoint /api/images
   useEffect(() => {
     const loadImages = async () => {
       try {
-        const res = await fetch("/api/images")
+        const res = await fetch(`${backendUrl}/`)
         const data = await res.json()
         if (data.images) {
           setImages(data.images)
@@ -33,7 +34,7 @@ export default function BirthdayPage() {
       }
     }
     loadImages()
-  }, [])
+  }, [backendUrl])
 
   // Verificar autenticación y lanzar confetti
   useEffect(() => {
@@ -65,7 +66,7 @@ export default function BirthdayPage() {
     try {
       const formData = new FormData()
       formData.append("file", file)
-      const res = await fetch("/api/images", {
+      const res = await fetch(`${backendUrl}/`, {
         method: "POST",
         body: formData,
       })
