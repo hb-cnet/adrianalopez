@@ -25,12 +25,16 @@ export function Carousel({ images, onDeleteImage }: CarouselProps) {
     return () => clearInterval(interval)
   }, [])
 
-  // Duplicamos las imágenes para lograr el efecto de scroll infinito
+  // Duplicamos las imágenes para lograr un efecto de scroll infinito.
   const duplicatedImages = [...images, ...images]
+
+  // Calcula la duración de la animación:
+  // Se establece un mínimo de 30s y se incrementa 3s por cada imagen.
+  const animationDuration = Math.max(30, images.length * 3)
 
   const handleImageClick = (image: string, index: number) => {
     setSelectedImage(image)
-    // Se usa módulo para obtener el índice relativo a la lista original
+    // Calcula el índice relativo a la lista original
     setSelectedIndex(index % images.length)
   }
 
@@ -51,11 +55,15 @@ export function Carousel({ images, onDeleteImage }: CarouselProps) {
             display: "flex",
             flexDirection: "column",
             gap: "2rem",
-            animation: "scrollVertical 30s linear infinite",
+            animation: `scrollVertical ${animationDuration}s linear infinite`,
           }}
         >
           {duplicatedImages.map((image, index) => (
-            <div key={index} className="relative w-full cursor-pointer" onClick={() => handleImageClick(image, index)}>
+            <div
+              key={index}
+              className="relative w-full cursor-pointer"
+              onClick={() => handleImageClick(image, index)}
+            >
               <Image
                 src={image || "/placeholder.svg"}
                 alt={`Imagen ${index + 1}`}
@@ -68,7 +76,7 @@ export function Carousel({ images, onDeleteImage }: CarouselProps) {
           ))}
         </div>
         {currentPhrase && (
-          <div className="fixed top-4 left-0 right-0 text-center z-41">
+          <div className="fixed top-4 left-0 right-0 text-center z-50">
             <p className="text-xl md:text-2xl font-bold text-white bg-black/50 mx-auto inline-block px-4 py-2 rounded-full animate-bounce">
               {currentPhrase}
             </p>
@@ -77,9 +85,12 @@ export function Carousel({ images, onDeleteImage }: CarouselProps) {
       </div>
 
       {selectedImage && (
-        <ImageViewer image={selectedImage} onClose={() => setSelectedImage(null)} onDelete={handleDelete} />
+        <ImageViewer
+          image={selectedImage}
+          onClose={() => setSelectedImage(null)}
+          onDelete={handleDelete}
+        />
       )}
     </>
-
   )
 }
