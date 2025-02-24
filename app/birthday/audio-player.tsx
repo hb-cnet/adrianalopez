@@ -6,26 +6,36 @@ import { Volume2, VolumeX } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function AudioPlayer() {
-  const [isMuted, setIsMuted] = useState(true)
+  // Iniciamos con isMuted en false para intentar reproducir el sonido
+  const [isMuted, setIsMuted] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    audioRef.current = new Audio("/birthday-song.mp3")
-    audioRef.current.loop = true
+    // Crear el objeto de audio y configurarlo
+    const audio = new Audio("/birthday-song.mp3")
+    audio.loop = true
+    audioRef.current = audio
+
+    // Intentar reproducir el audio automáticamente
+    audio.play().catch((err) =>
+      console.error("Error auto-playing audio:", err)
+    )
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current = null
-      }
+      audio.pause()
+      audioRef.current = null
     }
   }, [])
 
   const toggleMute = () => {
     if (audioRef.current) {
       if (isMuted) {
-        audioRef.current.play()
+        // Reproducir el audio si estaba en mute
+        audioRef.current.play().catch((err) =>
+          console.error("Error playing audio:", err)
+        )
       } else {
+        // Pausar el audio si no está en mute
         audioRef.current.pause()
       }
       setIsMuted(!isMuted)
@@ -36,10 +46,14 @@ export function AudioPlayer() {
     <Button
       variant="secondary"
       size="icon"
-      className="bg-white/80 backdrop-blur-sm" // se quita la posición fija
+      className="bg-white/80 backdrop-blur-sm"
       onClick={toggleMute}
     >
-      {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+      {isMuted ? (
+        <VolumeX className="h-8 w-8" />
+      ) : (
+        <Volume2 className="h-8 w-8" />
+      )}
     </Button>
   )
 }
