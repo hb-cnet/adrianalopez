@@ -33,7 +33,7 @@ export function HoroscopeChatBot({ onClose }: HoroscopeChatBotProps) {
 
 Tu horóscopo para el día de hoy ${dateString} es:
         
-Por favor, separa cada párrafo con un solo salto de línea.`;
+.`;
         
         const res = await axios.post("/api/chat", { prompt, conversation: [] });
         const formatted = formatResponse(res.data.response);
