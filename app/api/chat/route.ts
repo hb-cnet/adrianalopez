@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     const systemMessage = {
       role: "system",
       content:
-        "Genera el horóscopo diario para Piscis en español. hazlo dirigido para Adriana, con un tono amistoso y motivador, incluyendo emoticonos y frases alentadoras.",
+        "Genera el horóscopo diario para Piscis en español. hazlo dirigido para Adriana, con un tono amistoso y motivador, incluyendo emoticonos y frases alentadoras, nombra el dia para que sepa que el horozcopo es del dia.",
     };
 
     const messages =
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       {
         model: "gpt-3.5-turbo",
         messages,
-        max_tokens: 300,
+        max_tokens: 10000,
       },
       {
         headers: {
