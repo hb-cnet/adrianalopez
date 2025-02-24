@@ -16,7 +16,7 @@ export function HoroscopeChatBot({ onClose }: HoroscopeChatBotProps) {
 
   // Función para formatear la respuesta: reemplaza múltiples saltos de línea por uno solo
   const formatResponse = (text: string) => {
-    return text.replace(/\n+/g, "\n");
+    return text.replace(/\n+/g, "\n\n");
   };
 
   useEffect(() => {
