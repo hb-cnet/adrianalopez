@@ -2,23 +2,29 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // Se obtiene de .env.local
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 export async function POST(request: Request) {
   try {
     const { prompt, conversation } = await request.json();
 
-    // Si no hay conversación previa, usamos el prompt inicial.
-    const messages = conversation && conversation.length > 0 
-      ? conversation 
-      : [{ role: "user", content: prompt }];
+    const systemMessage = {
+      role: "system",
+      content:
+        "Eres un experto en horóscopo. Responde en español con un tono amigable y motivador. Utiliza saltos de línea para separar párrafos y formatea adecuadamente el título.",
+    };
+
+    const messages =
+      conversation && conversation.length > 0
+        ? conversation
+        : [systemMessage, { role: "user", content: prompt }];
 
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
         model: "gpt-3.5-turbo",
         messages,
-        max_tokens: 200,
+        max_tokens: 300,
       },
       {
         headers: {
@@ -31,8 +37,9 @@ export async function POST(request: Request) {
     const messageContent = response.data.choices[0].message.content;
     return NextResponse.json({ response: messageContent });
   } catch (error: unknown) {
+    const errMsg =
+      error instanceof Error ? error.message : "Error generando respuesta";
     console.error("Error en API chat:", error);
-    const errorMessage = error instanceof Error ? error.message : "Error generando respuesta";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: errMsg }, { status: 500 });
   }
 }
