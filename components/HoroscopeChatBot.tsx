@@ -30,7 +30,10 @@ export function HoroscopeChatBot({ onClose }: HoroscopeChatBotProps) {
         const prompt =
           "Genera el horóscopo diario para Piscis en español, con un tono amistoso y motivador, incluyendo emoticonos y frases alentadoras.";
         const res = await axios.post("/api/chat", { prompt, conversation: [] });
-        const botMessage = { role: "bot", content: formatBotResponse(res.data.response) };
+        const botMessage = {
+          role: "bot",
+          content: formatBotResponse(res.data.response),
+        };
         setConversation([botMessage]);
       } catch {
         setConversation([{ role: "bot", content: "Error al obtener el horóscopo. 😕" }]);
@@ -54,7 +57,10 @@ export function HoroscopeChatBot({ onClose }: HoroscopeChatBotProps) {
         prompt: "",
         conversation: updatedConversation,
       });
-      const botMessage = { role: "bot", content: formatBotResponse(res.data.response) };
+      const botMessage = {
+        role: "bot",
+        content: formatBotResponse(res.data.response),
+      };
       setConversation((prev) => [...prev, botMessage]);
     } catch {
       setConversation((prev) => [
@@ -75,8 +81,8 @@ export function HoroscopeChatBot({ onClose }: HoroscopeChatBotProps) {
           <X className="w-6 h-6" />
         </button>
       </div>
-      {/* Contenedor de mensajes */}
-      <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
+      {/* Contenedor de mensajes con padding izquierdo de 15px */}
+      <div className="flex-1 p-4 pl-[15px] overflow-y-auto bg-gray-50">
         {conversation.map((msg, index) => (
           <div
             key={index}
