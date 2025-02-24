@@ -175,7 +175,7 @@ export default function BirthdayPage() {
           variant="secondary"
           size="icon"
           className="bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-colors"
-          onClick={() => (window.location.href = "https://digitalmarket.com.co")}
+          onClick={() => (window.location.href = "https://www.youtube.com/watch?v=98Akpf1ph2o&list=RD98Akpf1ph2o&start_radio=1")}
         >
           <Gift className="h-10 w-10" />
         </Button>
