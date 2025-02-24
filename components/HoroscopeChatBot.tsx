@@ -23,7 +23,7 @@ export function HoroscopeChatBot() {
         const res = await axios.post("/api/chat", { prompt, conversation: [] });
         const botMessage = { role: "bot", content: res.data.response };
         setConversation([botMessage]);
-      } catch (error) {
+      } catch {
         setConversation([{ role: "bot", content: "Error al obtener el horóscopo." }]);
       } finally {
         setLoading(false);
@@ -51,7 +51,7 @@ export function HoroscopeChatBot() {
       });
       const botMessage = { role: "bot", content: res.data.response };
       setConversation((prev) => [...prev, botMessage]);
-    } catch (error) {
+    } catch {
       setConversation((prev) => [
         ...prev,
         { role: "bot", content: "Error al obtener respuesta." },

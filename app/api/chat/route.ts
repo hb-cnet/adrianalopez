@@ -30,8 +30,9 @@ export async function POST(request: Request) {
 
     const messageContent = response.data.choices[0].message.content;
     return NextResponse.json({ response: messageContent });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error en API chat:", error);
-    return NextResponse.json({ error: error.message || "Error generando respuesta" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : "Error generando respuesta";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
