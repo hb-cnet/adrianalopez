@@ -34,7 +34,7 @@ export function HoroscopeChatBot({ onClose }: HoroscopeChatBotProps) {
 ¡Hola Adriana! 🐟
 Tu horóscopo para el día de hoy ${formattedDate} es:
 
-Por favor, separa cada párrafo con doble salto de línea.`;
+Por favor, separa cada párrafo con doble salto de línea, siempre termina felicitando a Adriana y deseandole un buen dia para que cumpla todas sus metas, los dias 06, 16 y 26 de cada mes, hablale de lo mucho que la ama Álvaro.  😊`;
         const res = await axios.post("/api/chat", { prompt, conversation: [] });
         const formatted = formatResponse(res.data.response);
         setHoroscope(formatted);
