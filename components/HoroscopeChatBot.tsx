@@ -12,7 +12,7 @@ interface HoroscopeChatBotProps {
 export function HoroscopeChatBot({ onClose }: HoroscopeChatBotProps) {
   const [horoscope, setHoroscope] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [dateString, setDateString] = useState("");
+
 
   // Función para formatear la respuesta: reemplaza múltiples saltos de línea por uno solo
   const formatResponse = (text: string) => {
@@ -24,7 +24,7 @@ export function HoroscopeChatBot({ onClose }: HoroscopeChatBotProps) {
     const today = new Date();
     const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" };
     const formattedDate = today.toLocaleDateString("es-ES", options);
-    setDateString(formattedDate);
+
 
     const fetchHoroscope = async () => {
       setLoading(true);
@@ -34,7 +34,7 @@ export function HoroscopeChatBot({ onClose }: HoroscopeChatBotProps) {
 ¡Hola Adriana! 🐟
 Tu horóscopo para el día de hoy ${formattedDate} es:
 
-Por favor, separa cada párrafo con un solo salto de línea.`;
+Por favor, separa cada párrafo con doble salto de línea.`;
         const res = await axios.post("/api/chat", { prompt, conversation: [] });
         const formatted = formatResponse(res.data.response);
         setHoroscope(formatted);
@@ -53,7 +53,7 @@ Por favor, separa cada párrafo con un solo salto de línea.`;
       {/* Cabecera del chat con título y botón de cierre */}
       <div className="flex items-center justify-between bg-blue-600 text-white p-3 rounded-t-lg">
         <h3 className="text-2xl">
-          Horóscopo del día {dateString ? `(${dateString})` : ""}
+          Horóscopo del día 🐟
         </h3>
         <button onClick={onClose}>
           <X className="w-6 h-6" />
