@@ -74,7 +74,7 @@ export default function BirthdayPage() {
     return () => clearInterval(interval)
   }, [router, confettiCount])
 
-  // Función de subida de imagen con manejo robusto de errores
+  // Función de subida de imagen (sin cambios respecto a la versión anterior)
   const handleImageUpload = async (file: File) => {
     try {
       const formData = new FormData()
@@ -97,10 +97,9 @@ export default function BirthdayPage() {
         throw new Error(data?.error || "Error en la subida de imagen")
       }
 
-      // El backend retorna la propiedad "key"
       if (data.key) {
         const fullUrl = `${bucketBaseURL}${data.key}`
-        // Se agrega al final, sin reordenar las imágenes ya cargadas
+        // Se agrega al final sin reordenar el arreglo ya existente.
         setImages((prev) => [...prev, fullUrl])
       } else {
         console.error("Error: no se encontró key en la respuesta", data)
@@ -113,14 +112,33 @@ export default function BirthdayPage() {
         message = error.message
       }
       console.error("Error en la subida de imagen:", message)
-      // Aquí puedes notificar al usuario mediante un toast o alerta visual
     }
   }
 
-  // Eliminación de imagen (actualmente solo elimina del estado local)
+  // Función para eliminar imagen: llama al endpoint DELETE para mover la imagen a la carpeta "trash"
   const handleDeleteImage = async (index: number) => {
-    const newImages = images.filter((_, i) => i !== index)
-    setImages(newImages)
+    const imageUrl = images[index]
+    // Extraer la clave del archivo: elimina la URL base
+    const key = imageUrl.replace(bucketBaseURL, "")
+    try {
+      const res = await fetch(`${backendUrl}/?key=${encodeURIComponent(key)}`, {
+        method: "DELETE",
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        console.error("Error en la eliminación de imagen, respuesta:", data)
+        throw new Error(data?.error || "Error al eliminar la imagen")
+      }
+      // Si la eliminación es exitosa, quitar la imagen del estado
+      setImages((prev) => prev.filter((_, i) => i !== index))
+    } catch (error: unknown) {
+      let message = "Error al eliminar la imagen"
+      if (error instanceof Error) {
+        message = error.message
+      }
+      console.error("Error al eliminar la imagen:", message)
+      // Aquí podrías notificar al usuario de algún error
+    }
   }
 
   if (isLoading) {
