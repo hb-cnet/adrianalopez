@@ -193,7 +193,6 @@ export default function BirthdayPage() {
           <ImagePlus className="h-10 w-10" />
         </Button>
       </div>
-
       {showUploader && (
         <ImageUploader onUpload={handleImageUpload} onClose={() => setShowUploader(false)} />
       )}
