@@ -74,7 +74,7 @@ export default function BirthdayPage() {
     return () => clearInterval(interval)
   }, [router, confettiCount])
 
-  // Función de subida de imagen (sin cambios respecto a la versión anterior)
+  // Función de subida de imagen con manejo robusto de errores
   const handleImageUpload = async (file: File) => {
     try {
       const formData = new FormData()
@@ -115,19 +115,19 @@ export default function BirthdayPage() {
     }
   }
 
-  // Función para eliminar imagen: llama al endpoint DELETE para mover la imagen a la carpeta "trash"
+  // Función para eliminar imagen: se envía DELETE a /r2/<key> para moverla a trash
   const handleDeleteImage = async (index: number) => {
     const imageUrl = images[index]
-    // Extraer la clave del archivo: elimina la URL base
+    // Extraer la clave del archivo eliminando la URL base
     const key = imageUrl.replace(bucketBaseURL, "")
     try {
-      const res = await fetch(`${backendUrl}/?key=${encodeURIComponent(key)}`, {
+      const res = await fetch(`${backendUrl}/r2/${encodeURIComponent(key)}`, {
         method: "DELETE",
       })
       if (!res.ok) {
-        const data = await res.json()
-        console.error("Error en la eliminación de imagen, respuesta:", data)
-        throw new Error(data?.error || "Error al eliminar la imagen")
+        const text = await res.text()
+        console.error("Error en la eliminación de imagen, respuesta:", text)
+        throw new Error(text || "Error al eliminar la imagen")
       }
       // Si la eliminación es exitosa, quitar la imagen del estado
       setImages((prev) => prev.filter((_, i) => i !== index))
@@ -137,7 +137,6 @@ export default function BirthdayPage() {
         message = error.message
       }
       console.error("Error al eliminar la imagen:", message)
-      // Aquí podrías notificar al usuario de algún error
     }
   }
 
