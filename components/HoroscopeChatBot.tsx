@@ -1,4 +1,3 @@
-// app/components/HoroscopeChatBot.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,12 +15,11 @@ export function HoroscopeChatBot({ onClose }: HoroscopeChatBotProps) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Función para formatear la respuesta del bot
   const formatBotResponse = (text: string) => {
-    // Asegurarse de que haya saltos de línea entre párrafos
-    const formatted = text.split("\n").join("\n\n");
+    // Separa los párrafos por dos saltos de línea, en caso de que no lo tenga ya.
+    let formatted = text.split("\n").join("\n\n");
     if (!formatted.trim().endsWith("?")) {
-      return formatted + "\n\n😊 ¿Deseas saber algo más sobre tu horóscopo?";
+      formatted += "\n\n😊 ¿Deseas saber algo más sobre tu horóscopo?";
     }
     return formatted;
   };
@@ -30,19 +28,19 @@ export function HoroscopeChatBot({ onClose }: HoroscopeChatBotProps) {
     const fetchHoroscope = async () => {
       setLoading(true);
       try {
-        // Generar la fecha actual en español
+        // Obtener la fecha actual formateada en español
         const today = new Date();
         const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
         const dateString = today.toLocaleDateString("es-ES", options);
         
-        // Prompt inicial con el título y fecha
-        const prompt = `Genera el horóscopo diario para Piscis en español, con un tono amistoso y motivador, incluyendo emoticonos y frases alentadoras. 
+        const prompt = `Genera el horóscopo diario para Piscis en español, con un tono amistoso y motivador, incluyendo emoticonos y frases alentadoras.
         
 **¡Hola Adriana! 🐟**
-        
+
 Tu horóscopo para el día de hoy ${dateString} es:
         
-Por favor, separa cada párrafo con un salto de línea.`;
+Por favor, separa cada párrafo con dos saltos de línea.`;
+        
         const res = await axios.post("/api/chat", { prompt, conversation: [] });
         const botMessage = {
           role: "bot",
@@ -88,7 +86,7 @@ Por favor, separa cada párrafo con un salto de línea.`;
 
   return (
     <div className="fixed bottom-16 right-4 z-50 w-96 h-[28rem] bg-white rounded-lg shadow-xl flex flex-col">
-      {/* Cabecera del chat con botón de cierre */}
+      {/* Cabecera del chat */}
       <div className="flex items-center justify-between bg-blue-600 text-white p-3 rounded-t-lg">
         <h3 className="text-2xl font-bold">¡Hola Adriana! 🐟</h3>
         <button onClick={onClose}>
@@ -96,7 +94,7 @@ Por favor, separa cada párrafo con un salto de línea.`;
         </button>
       </div>
       {/* Contenedor de mensajes con padding izquierdo de 15px */}
-      <div className="flex-1 p-4 pl-[15px] overflow-y-auto bg-gray-50">
+      <div className="flex-1 p-4 pl-[15px] overflow-y-auto bg-gray-50 whitespace-pre-wrap">
         {conversation.map((msg, index) => (
           <div
             key={index}

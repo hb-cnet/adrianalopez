@@ -1,4 +1,3 @@
-// app/api/chat/route.ts
 import { NextResponse } from "next/server";
 import axios from "axios";
 
@@ -8,10 +7,11 @@ export async function POST(request: Request) {
   try {
     const { prompt, conversation } = await request.json();
 
+    // Mensaje del sistema que indica cómo formatear la respuesta.
     const systemMessage = {
       role: "system",
       content:
-        "Eres un experto en horóscopo. Responde en español con un tono amigable y motivador. Utiliza saltos de línea para separar párrafos y formatea adecuadamente el título.",
+        "Eres un experto en horóscopo. Responde en español con un tono amigable y motivador. Cada párrafo debe estar separado por dos saltos de línea para que el texto se vea espaciado y agradable. Formatea la respuesta con claridad y usa emoticonos cuando sea apropiado, el horóscopo diario va dirigido a Adriana.",
     };
 
     const messages =
