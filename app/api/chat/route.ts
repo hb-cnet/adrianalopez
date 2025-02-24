@@ -11,7 +11,6 @@ export async function POST(request: Request) {
   try {
     const { prompt, conversation } = await request.json();
 
-    // Si prompt está vacío, se puede devolver un error temprano
     if (!prompt || prompt.trim() === "") {
       return NextResponse.json(
         { error: "El prompt no puede estar vacío" },
@@ -19,11 +18,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Mensaje del sistema para establecer contexto
     const systemMessage = {
       role: "system",
       content:
-        "Genera el horóscopo diario para Piscis en español. hazlo dirigido para Adriana, con un tono amistoso y motivador, incluyendo emoticonos y frases alentadoras, nombra el dia para que sepa que el horozcopo es del dia.",
+        "Genera el horóscopo diario para Piscis en español. Hazlo dirigido para Adriana, con un tono amistoso y motivador, incluyendo emoticonos y frases alentadoras. Separa cada párrafo con un solo salto de línea, e indica que es el horoscopo del dia, y entregas el dia actual.",
     };
 
     const messages =
@@ -36,7 +34,7 @@ export async function POST(request: Request) {
       {
         model: "gpt-3.5-turbo",
         messages,
-        max_tokens: 10000,
+        max_tokens: 300,
       },
       {
         headers: {
@@ -46,10 +44,12 @@ export async function POST(request: Request) {
       }
     );
 
-    const messageContent = response.data.choices[0].message.content;
+    // Procesamos la respuesta para reemplazar múltiples saltos de línea por uno solo.
+    let messageContent = response.data.choices[0].message.content;
+    messageContent = messageContent.replace(/\n{2,}/g, "\n");
+
     return NextResponse.json({ response: messageContent });
   } catch (error: unknown) {
-    // Si es un error de Axios, imprime error.response.data para mayor detalle.
     if (axios.isAxiosError(error)) {
       console.error("Axios error data:", error.response?.data);
     }
