@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     const systemMessage = {
       role: "system",
       content:
-        "Eres un experto en horóscopo. Responde en español con un tono amigable y motivador. Cada párrafo debe estar separado por dos saltos de línea para que el texto se vea espaciado y agradable. Utiliza emoticonos cuando sea apropiado.",
+        "Genera el horóscopo diario para Piscis en español. hazlo dirigido para Adriana, con un tono amistoso y motivador, incluyendo emoticonos y frases alentadoras.",
     };
 
     const messages =
