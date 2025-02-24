@@ -37,7 +37,7 @@ La primera linea siempre debe de ser:
 La siguiente linea del chat, debe de ser:
 Tu horóscopo para el día de hoy ${formattedDate} es:
 
-Por favor, separa cada párrafo con doble salto de línea, siempre termina felicitando a Adriana y deseandole un buen dia para que cumpla todas sus metas, los dias 06, 16 y 26 de cada mes, hablale de lo mucho que la ama Álvaro.  😊`;
+Por favor, separa cada párrafo con doble salto de línea, siempre termina felicitando a Adriana y deseandole un buen dia para que cumpla todas sus metas.  😊`;
         const res = await axios.post("/api/chat", { prompt, conversation: [] });
         const formatted = formatResponse(res.data.response);
         setHoroscope(formatted);
@@ -52,7 +52,7 @@ Por favor, separa cada párrafo con doble salto de línea, siempre termina felic
   }, []);
 
   return (
-    <div className="fixed bottom-16 right-4 z-50 w-96 h-[28rem] bg-white rounded-lg shadow-xl flex flex-col mx-4">
+    <div className="fixed bottom-16 right-1 z-50 w-96 h-[28rem] bg-white rounded-lg shadow-xl flex flex-col">
       {/* Cabecera del chat con título y botón de cierre */}
       <div className="flex items-center justify-between bg-blue-600 text-white p-3 rounded-t-lg">
         <h3 className="text-2xl">
