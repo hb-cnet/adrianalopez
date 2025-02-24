@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       {
         model: "gpt-3.5-turbo",
         messages,
-        max_tokens: 300,
+        max_tokens: 400,
       },
       {
         headers: {
