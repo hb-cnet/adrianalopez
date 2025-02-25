@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     if (!prompt || prompt.trim() === "") {
       return NextResponse.json(
         { error: "El prompt no puede estar vacío" },
-        { status: 400 }
+        { status: 401 }
       );
     }
 
